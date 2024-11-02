@@ -4,15 +4,15 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('button').addEventListener('click', () => {
         document.getElementById('button').style.display = 'none';
+        document.getElementById('speedModifier').style.display = 'flex';
         document.getElementById('introScreen').style.display = 'none';
         document.getElementById('toggleOrbits').style.display = 'block';
-        document.getElementById('slider').style.display = 'block';
-        initializeSolarSystem();  // Initialize the solar system scene
+        initializeSolarSystem();
     });
 });
 
 // Constant
-let speedMultiplier = 0;
+let speedMultiplier = 0.1;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000011);
@@ -272,12 +272,25 @@ dateDiv.style.pointerEvents = 'none';
 
 document.body.appendChild(dateDiv);
 
+document.getElementById('super-prev').addEventListener('click', () => {speedMultiplier = -5});
+document.getElementById('prev').addEventListener('click', () => {speedMultiplier = -2});
+document.getElementById('pause-play').addEventListener('click', () => {
+    if (speedMultiplier == 0) {
+        speedMultiplier = 0.1;
+    }
+    else {
+        speedMultiplier = 0;
+    }
+});
+document.getElementById('fast-forward').addEventListener('click', () => {speedMultiplier = 2});
+document.getElementById('super-fast').addEventListener('click', () => {speedMultiplier = 5});
+
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function zoomAnimate() {
-    for (let i = 500; i >= 1.4; i-= 7) {
+    for (let i = 500; i >= 2; i-= 7) {
         camera.position.set(i, i, i);
         await sleep(3);
         if (i < 10) {
