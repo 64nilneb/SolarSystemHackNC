@@ -1,3 +1,5 @@
+<!-- index.html -->
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -208,6 +210,39 @@
       }
       .popup p {
         margin: 3px 0;
+      }
+
+      /* Ensure labels and date label don't block clicks */
+      .label,
+      .date-label {
+        pointer-events: none;
+      }
+
+      /* Styles for the planet popup */
+      .planet-popup {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 20px;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        border: 1px solid white;
+        border-radius: 10px;
+        z-index: 1000;
+        max-width: 300px;
+        text-align: left;
+        font-family: Poppins;
+      }
+
+      .planet-popup button {
+        margin-top: 10px;
+        padding: 5px 10px;
+        cursor: pointer;
+        background-color: #ffffff;
+        color: #000;
+        border: none;
+        border-radius: 5px;
+        font-size: 14px;
       }
     </style>
   </head>

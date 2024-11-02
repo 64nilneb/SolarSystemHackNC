@@ -1,3 +1,5 @@
+// main.js
+
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
@@ -11,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// Constant
+// Constants
 let speedMultiplier = 0.1;
 
 const scene = new THREE.Scene();
@@ -60,16 +62,8 @@ function addStars() {
 addStars(); // Call the function to add stars
 renderer.render(scene, camera);
 
-// Load textures for the planets
+// Load textures for the sun and asteroid
 const sunTexture = textureLoader.load("textures/sun.jpg");
-const mercuryTexture = textureLoader.load("textures/mercury.jpg");
-const venusTexture = textureLoader.load("textures/venus.jpg");
-const earthTexture = textureLoader.load("textures/earth.jpg");
-const marsTexture = textureLoader.load("textures/mars.jpg");
-const jupiterTexture = textureLoader.load("textures/jupiter.jpg");
-const saturnTexture = textureLoader.load("textures/saturn.jpg");
-const uranusTexture = textureLoader.load("textures/uranus.jpg");
-const neptuneTexture = textureLoader.load("textures/neptune.jpg");
 const asteroidTexture = textureLoader.load("textures/asteroid.jpg");
 
 const sizeMultiplier = 0.1;
@@ -79,137 +73,75 @@ const sunMaterial = new THREE.MeshBasicMaterial({ map: sunTexture });
 const sun = new THREE.Mesh(sunGeometry, sunMaterial);
 scene.add(sun);
 
-// Planet data (size, distance from sun, speed of orbit)
-const planetData = [
-  {
-    name: "Mercury",
-    size: 0.5,
-    distance: 0.39,
-    texture: mercuryTexture,
-    speed: 0.08264,
-    rotationSpeed: 0.02,
-    initialAngleDeg: 51.57,
-  },
-  {
-    name: "Venus",
-    size: 0.7,
-    distance: 0.72,
-    texture: venusTexture,
-    speed: 0.03232,
-    rotationSpeed: 0.01,
-    initialAngleDeg: 142.2,
-  },
-  {
-    name: "Earth",
-    size: 0.75,
-    distance: 1,
-    texture: earthTexture,
-    speed: 0.01992,
-    rotationSpeed: 0.03,
-    initialAngleDeg: 303.84,
-  },
-  {
-    name: "Mars",
-    size: 0.6,
-    distance: 1.52,
-    texture: marsTexture,
-    speed: 0.01059,
-    rotationSpeed: 0.04,
-    initialAngleDeg: 78.12,
-  },
-  {
-    name: "Jupiter",
-    size: 1.2,
-    distance: 5.2,
-    texture: jupiterTexture,
-    speed: 0.001673,
-    rotationSpeed: 0.05,
-    initialAngleDeg: 33.84,
-  },
-  {
-    name: "Saturn",
-    size: 1,
-    distance: 9.54,
-    texture: saturnTexture,
-    speed: 0.0009294,
-    rotationSpeed: 0.03,
-    initialAngleDeg: 303.73,
-  },
-  {
-    name: "Uranus",
-    size: 0.9,
-    distance: 19.2,
-    texture: uranusTexture,
-    speed: 0.000237,
-    rotationSpeed: 0.02,
-    initialAngleDeg: 106.45,
-  },
-  {
-    name: "Neptune",
-    size: 0.85,
-    distance: 30.06,
-    texture: neptuneTexture,
-    speed: 0.0001208,
-    rotationSpeed: 0.02,
-    initialAngleDeg: 54.3,
-  },
-];
-
 // Arrays to hold planet meshes and orbits
 const planets = [];
 const orbits = [];
 const labels = []; // Array to hold label elements
 
-// Create planets and labels
-planetData.forEach((data) => {
-  // Create planet mesh
-  const geometry = new THREE.SphereGeometry(data.size * sizeMultiplier, 32, 32);
-  const planetMaterial = new THREE.MeshBasicMaterial({ map: data.texture });
-  const planet = new THREE.Mesh(geometry, planetMaterial);
-  planet.position.set(data.distance, 0, 0);
-  scene.add(planet);
+let planetData = [];
 
-  // Compute initial angle in radians
-  const initialAngleRad = (data.initialAngleDeg * Math.PI) / 180;
+function initializePlanets() {
+  // Create planets and labels
+  planetData.forEach((data) => {
+    // Load the texture for this planet
+    const planetTexture = textureLoader.load(data.texture);
 
-  planets.push({
-    planet,
-    distance: data.distance,
-    speed: data.speed,
-    angle: initialAngleRad,
-    rotationSpeed: data.rotationSpeed,
+    // Create planet mesh
+    const geometry = new THREE.SphereGeometry(
+      data.size * sizeMultiplier,
+      32,
+      32
+    );
+    const planetMaterial = new THREE.MeshBasicMaterial({ map: planetTexture });
+    const planet = new THREE.Mesh(geometry, planetMaterial);
+    planet.position.set(data.distance, 0, 0);
+
+    // Store the data in userData
+    planet.userData = data;
+    scene.add(planet);
+
+    // Compute initial angle in radians
+    const initialAngleRad = (data.initialAngleDeg * Math.PI) / 180;
+
+    planets.push({
+      planet,
+      distance: data.distance,
+      speed: data.speed,
+      angle: initialAngleRad,
+      rotationSpeed: data.rotationSpeed,
+    });
+
+    // Create the label as an HTML div
+    const labelDiv = document.createElement("div");
+    labelDiv.className = "label";
+    labelDiv.textContent = data.name;
+    labelDiv.style.color = "lightblue";
+    labelDiv.style.position = "absolute";
+    labelDiv.style.fontFamily = "Poppins";
+    labelDiv.style.fontSize = "20px";
+    labelDiv.style.pointerEvents = "none";
+    labelDiv.style.whiteSpace = "nowrap";
+    labelDiv.style.textShadow = "1px 1px 0 black";
+    document.body.appendChild(labelDiv);
+
+    labels.push({ planet: planet, labelDiv: labelDiv });
+
+    // Create the orbit ring
+    const orbitGeometry = new THREE.RingGeometry(
+      data.distance - 0.02 * sizeMultiplier,
+      data.distance + 0.02 * sizeMultiplier,
+      64
+    );
+    const orbitMaterial = new THREE.MeshBasicMaterial({
+      color: 0x6faeff,
+      side: THREE.DoubleSide,
+    });
+    const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
+    orbit.rotation.x = Math.PI / 2;
+    scene.add(orbit);
+    orbits.push(orbit);
   });
-
-  // Create the label as an HTML div
-  const labelDiv = document.createElement("div");
-  labelDiv.className = "label";
-  labelDiv.textContent = data.name;
-  labelDiv.style.color = "lightblue";
-  labelDiv.style.position = "absolute";
-  labelDiv.style.fontFamily = "Poppins";
-  labelDiv.style.fontSize = "20px";
-  labelDiv.style.pointerEvents = "none";
-  labelDiv.style.whiteSpace = "nowrap";
-  labelDiv.style.textShadow = "1px 1px 0 black";
-  document.body.appendChild(labelDiv);
-
-  labels.push({ planet: planet, labelDiv: labelDiv });
-
-  // Create the orbit ring
-  const orbitGeometry = new THREE.RingGeometry(
-    data.distance - 0.02 * sizeMultiplier,
-    data.distance + 0.02 * sizeMultiplier,
-    64
-  );
-  const orbitMaterial = new THREE.MeshBasicMaterial({
-    color: 0x6faeff,
-    side: THREE.DoubleSide,
-  });
-  const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
-  orbit.rotation.x = Math.PI / 2;
-  scene.add(orbit);
-  orbits.push(orbit);
-});
+}
 
 // Create the asteroid belt
 const asteroidBelt = new THREE.Group();
@@ -412,7 +344,116 @@ async function zoomAnimate() {
   }
 }
 
+// Raycaster and mouse vector
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let currentPopup = null; // Global variable to track the current popup
+
+// Event listener for clicks
+renderer.domElement.addEventListener("click", onClick, false);
+
+function onClick(event) {
+  // Calculate mouse position in normalized device coordinates (-1 to +1)
+  mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+  mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+  // Update the raycaster
+  raycaster.setFromCamera(mouse, camera);
+
+  // Calculate objects intersecting the ray
+  const intersects = raycaster.intersectObjects(planets.map((p) => p.planet));
+
+  if (intersects.length > 0) {
+    const clickedPlanet = intersects[0].object;
+    const planetData = clickedPlanet.userData;
+    showPopup(planetData);
+  }
+}
+
+function showPopup(data) {
+  // If there's already a popup open, remove it
+  if (currentPopup) {
+    document.body.removeChild(currentPopup);
+    currentPopup = null;
+  }
+
+  // Create a popup div
+  const popup = document.createElement("div");
+  popup.className = "planet-popup";
+
+  // Style the popup
+  popup.style.position = "absolute";
+  popup.style.top = "10px";
+  popup.style.right = "10px";
+  popup.style.padding = "20px";
+  popup.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+  popup.style.color = "white";
+  popup.style.border = "1px solid white";
+  popup.style.borderRadius = "10px";
+  popup.style.zIndex = "1000";
+  popup.style.maxWidth = "300px";
+  popup.style.textAlign = "left";
+  popup.style.fontFamily = "Poppins";
+
+  // Add content to the popup
+  const title = document.createElement("h2");
+  title.textContent = data.name;
+  popup.appendChild(title);
+
+  const tempPara = document.createElement("p");
+  tempPara.innerHTML = `<strong>Temperature:</strong> ${data.temperature}`;
+  popup.appendChild(tempPara);
+
+  const massPara = document.createElement("p");
+  massPara.innerHTML = `<strong>Mass:</strong> ${data.mass}`;
+  popup.appendChild(massPara);
+
+  const radiusPara = document.createElement("p");
+  radiusPara.innerHTML = `<strong>Radius:</strong> ${data.radius}`;
+  popup.appendChild(radiusPara);
+
+  const periodPara = document.createElement("p");
+  periodPara.innerHTML = `<strong>Orbital Period:</strong> ${data.period} days`;
+  popup.appendChild(periodPara);
+
+  const axisPara = document.createElement("p");
+  axisPara.innerHTML = `<strong>Semi-Major Axis:</strong> ${data.semiMajorAxis} AU`;
+  popup.appendChild(axisPara);
+
+  // Create the close button
+  const closeButton = document.createElement("button");
+  closeButton.textContent = "Close";
+  closeButton.style.marginTop = "10px";
+  closeButton.style.padding = "5px 10px";
+  closeButton.style.cursor = "pointer";
+  closeButton.style.backgroundColor = "#ffffff";
+  closeButton.style.color = "#000";
+  closeButton.style.border = "none";
+  closeButton.style.borderRadius = "5px";
+  closeButton.style.fontSize = "14px";
+
+  // Attach the event listener directly to the button
+  closeButton.addEventListener("click", () => {
+    document.body.removeChild(popup);
+    currentPopup = null; // Reset the currentPopup variable
+  });
+
+  popup.appendChild(closeButton);
+
+  document.body.appendChild(popup);
+
+  // Update the currentPopup variable
+  currentPopup = popup;
+}
+
 function initializeSolarSystem() {
-  zoomAnimate();
-  animate();
+  fetch("planetData.json")
+    .then((response) => response.json())
+    .then((data) => {
+      planetData = data;
+      initializePlanets();
+      zoomAnimate();
+      animate();
+    })
+    .catch((error) => console.error("Error loading planet data:", error));
 }
