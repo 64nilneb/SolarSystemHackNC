@@ -78,14 +78,14 @@ scene.add(sun);
 
 // Planet data (size, distance from sun, speed of orbit)
 const planetData = [
-    { name: 'MERCURY', size: 0.5, distance: 0.39, texture: mercuryTexture, speed: 0.08264, rotationSpeed: 0.02, initialAngleDeg: 51.57 },
-    { name: 'VENUS', size: 0.7, distance: 0.72, texture: venusTexture, speed: 0.03232, rotationSpeed: 0.01, initialAngleDeg: 142.2 },
-    { name: 'EARTH', size: 0.75, distance: 1, texture: earthTexture, speed: 0.01992, rotationSpeed: 0.03, initialAngleDeg: 303.84 },
-    { name: 'MARS', size: 0.6, distance: 1.52, texture: marsTexture, speed: 0.01059, rotationSpeed: 0.04, initialAngleDeg: 78.12 },
-    { name: 'JUPITER', size: 1.2, distance: 5.2, texture: jupiterTexture, speed: 0.001673, rotationSpeed: 0.05, initialAngleDeg: 33.84 },
-    { name: 'SATURN', size: 1, distance: 9.54, texture: saturnTexture, speed: 0.0009294, rotationSpeed: 0.03, initialAngleDeg: 303.73 },
-    { name: 'URANUS', size: 0.9, distance: 19.2, texture: uranusTexture, speed: 0.0002370, rotationSpeed: 0.02, initialAngleDeg: 106.45 },
-    { name: 'NEPTUNE', size: 0.85, distance: 30.06, texture: neptuneTexture, speed: 0.0001208, rotationSpeed: 0.02, initialAngleDeg: 54.3 },
+    { name: 'Mercury', size: 0.5, distance: 0.39, texture: mercuryTexture, speed: 0.08264, rotationSpeed: 0.02, initialAngleDeg: 51.57 },
+    { name: 'Venus', size: 0.7, distance: 0.72, texture: venusTexture, speed: 0.03232, rotationSpeed: 0.01, initialAngleDeg: 142.2 },
+    { name: 'Earth', size: 0.75, distance: 1, texture: earthTexture, speed: 0.01992, rotationSpeed: 0.03, initialAngleDeg: 303.84 },
+    { name: 'Mars', size: 0.6, distance: 1.52, texture: marsTexture, speed: 0.01059, rotationSpeed: 0.04, initialAngleDeg: 78.12 },
+    { name: 'Jupiter', size: 1.2, distance: 5.2, texture: jupiterTexture, speed: 0.001673, rotationSpeed: 0.05, initialAngleDeg: 33.84 },
+    { name: 'Saturn', size: 1, distance: 9.54, texture: saturnTexture, speed: 0.0009294, rotationSpeed: 0.03, initialAngleDeg: 303.73 },
+    { name: 'Uranus', size: 0.9, distance: 19.2, texture: uranusTexture, speed: 0.0002370, rotationSpeed: 0.02, initialAngleDeg: 106.45 },
+    { name: 'Neptune', size: 0.85, distance: 30.06, texture: neptuneTexture, speed: 0.0001208, rotationSpeed: 0.02, initialAngleDeg: 54.3 },
 ];
 
 // Arrays to hold planet meshes and orbits
@@ -113,8 +113,11 @@ planetData.forEach(data => {
     labelDiv.textContent = data.name;
     labelDiv.style.color = 'lightblue';
     labelDiv.style.position = 'absolute';
+    labelDiv.style.fontFamily = 'Poppins';
+    labelDiv.style.fontSize = '20px';
     labelDiv.style.pointerEvents = 'none';
     labelDiv.style.whiteSpace = 'nowrap';
+    labelDiv.style.textShadow = '1px 1px 0 black';
     document.body.appendChild(labelDiv);
 
     labels.push({ planet: planet, labelDiv: labelDiv });
@@ -265,6 +268,7 @@ dateDiv.style.position = 'absolute';
 dateDiv.style.top = '10px';
 dateDiv.style.width = '100%';
 dateDiv.style.textAlign = 'center';
+dateDiv.style.fontFamily = 'Poppins';
 dateDiv.style.fontWeight = 'bold';
 dateDiv.style.fontSize = '20px';
 dateDiv.style.color = 'white';
