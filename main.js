@@ -59,7 +59,7 @@ function addStars() {
   scene.add(stars);
 }
 
-addStars(); // Call the function to add stars
+//addStars(); // Call the function to add stars
 renderer.render(scene, camera);
 
 // Load textures for the sun and asteroid
@@ -142,56 +142,116 @@ function initializePlanets() {
     orbits.push(orbit);
   });
 }
-
 // Create the asteroid belt
 const asteroidBelt = new THREE.Group();
+const kuiperBelt = new THREE.Group(); 
 scene.add(asteroidBelt);
+scene.add(kuiperBelt); 
+
 
 function createAsteroidBelt() {
-  const asteroidCount = 1500; // Number of asteroids
-  const beltInnerRadius = 2.0; // Just beyond Mars' orbit
-  const beltOuterRadius = 3.2; // Just before Jupiter's orbit
-  const asteroidMaterial = new THREE.MeshBasicMaterial({
-    map: asteroidTexture,
-    color: 0x656565,
-  });
+    const asteroidCount = 1500; // Number of asteroids
+    const beltInnerRadius = 2.0; // Just beyond Mars' orbit
+    const beltOuterRadius = 3.2; // Just before Jupiter's orbit
+    const asteroidMaterial = new THREE.MeshBasicMaterial({ map: asteroidTexture, color: 0x656565 });
 
-  for (let i = 0; i < asteroidCount; i++) {
-    const asteroidGeometry = new THREE.SphereGeometry(
-      THREE.MathUtils.randFloat(0, 0.3) * sizeMultiplier,
-      8,
-      8
-    ); // Small spheres
-    const asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial);
+    for (let i = 0; i < asteroidCount; i++) {
+        const asteroidGeometry = new THREE.SphereGeometry(THREE.MathUtils.randFloat(0, 0.3) * sizeMultiplier, 8, 8); // Small spheres
+        const asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial);
 
-    // Random distance within the belt
-    const distance = THREE.MathUtils.randFloat(
-      beltInnerRadius,
-      beltOuterRadius
-    );
+        // Random distance within the belt
+        const distance = THREE.MathUtils.randFloat(beltInnerRadius, beltOuterRadius);
 
-    // Random angle around the sun
-    const angle = THREE.MathUtils.randFloat(0, Math.PI * 2);
+        // Random angle around the sun
+        const angle = THREE.MathUtils.randFloat(0, Math.PI * 2);
 
-    // Random height to give thickness to the belt
-    const height = THREE.MathUtils.randFloatSpread(0.1); // Slight vertical spread
+        // Random height to give thickness to the belt
+        const height = THREE.MathUtils.randFloatSpread(0.1); // Slight vertical spread
 
-    asteroid.position.set(
-      Math.cos(angle) * distance,
-      height,
-      Math.sin(angle) * distance
-    );
+        asteroid.position.set(
+            Math.cos(angle) * distance,
+            height,
+            Math.sin(angle) * distance
+        );
 
-    // Random speed for asteroid orbit
-    const speed = THREE.MathUtils.randFloat(0.0005, 0.001);
+        // Random speed for asteroid orbit
+        const speed = THREE.MathUtils.randFloat(0.0005, 0.001);
 
-    asteroid.userData = { distance, angle, speed };
+        asteroid.userData = { distance, angle, speed };
 
-    asteroidBelt.add(asteroid);
-  }
+        asteroidBelt.add(asteroid);
+    }
 }
 
 createAsteroidBelt(); // Generate the asteroid belt
+
+function createKuiperBelt() {
+    const kuiperBeltCount = 1000; // Adjust the number for performance
+    const beltInnerRadius = 45; // Just beyond Neptune's orbit (30 AU)
+    const beltOuterRadius = 50; // Up to 50 AU from the Sun
+
+    const kuiperBeltMaterial = new THREE.MeshBasicMaterial({ map: asteroidTexture, color: 0x666666 });
+
+    for (let i = 0; i < kuiperBeltCount; i++) {
+        const kuiperObjectGeometry = new THREE.SphereGeometry(THREE.MathUtils.randFloat(1,3) * sizeMultiplier, 8, 8);
+        const kuiperObject = new THREE.Mesh(kuiperObjectGeometry, kuiperBeltMaterial);
+
+        // Random distance within the belt
+        const distance = THREE.MathUtils.randFloat(beltInnerRadius, beltOuterRadius);
+
+        // Random angle around the sun
+        const angle = THREE.MathUtils.randFloat(0, Math.PI * 2);
+
+        // Random height to give thickness to the belt
+        const height = THREE.MathUtils.randFloatSpread(2); // Slight vertical spread
+
+        kuiperObject.position.set(
+            Math.cos(angle) * distance,
+            height,
+            Math.sin(angle) * distance
+        );
+
+        // Random speed for Kuiper Belt object's orbit (slower than inner asteroids)
+        const speed = THREE.MathUtils.randFloat(0.00005, 0.00015);
+
+        kuiperObject.userData = { distance, angle, speed };
+
+        kuiperBelt.add(kuiperObject);
+    }
+}
+
+
+createKuiperBelt();
+
+function createOortCloud() {
+    const particleCount = 10000; // Adjust for performance
+    const innerRadius = 200; // Just beyond Pluto
+    const outerRadius = 300; // Scale as needed
+
+    const positions = [];
+
+    for (let i = 0; i < particleCount; i++) {
+        const radius = THREE.MathUtils.randFloat(innerRadius, outerRadius);
+        const theta = THREE.MathUtils.randFloat(0, Math.PI * 2);
+        const phi = Math.acos(THREE.MathUtils.randFloat(-1, 1));
+
+        const x = radius * Math.sin(phi) * Math.cos(theta);
+        const y = radius * Math.sin(phi) * Math.sin(theta);
+        const z = radius * Math.cos(phi);
+
+        positions.push(x, y, z);
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+    const material = new THREE.PointsMaterial({ color: 0xffffff, size: 0.05 });
+
+    const oortCloud = new THREE.Points(geometry, material);
+    scene.add(oortCloud);
+}
+
+createOortCloud();
 
 // Camera controls
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -201,8 +261,29 @@ controls.enableZoom = true;
 controls.enableRotate = true;
 controls.enablePan = false;
 
+let simulationStartDate = new Date('November 2, 2024');
+let simulationCurrentDate = new Date(simulationStartDate);
+let lastFrameTime = performance.now();
+
 function animate() {
   requestAnimationFrame(animate);
+
+  const currentFrameTime = performance.now();
+    const deltaTime = currentFrameTime - lastFrameTime; // in milliseconds
+    lastFrameTime = currentFrameTime;
+
+    // Update simulation time
+    // At speedMultiplier = 1, simulation advances 1 day per real second
+    const millisecondsPerDay = 13000000000; // Number of milliseconds in a day
+    const simulationMillisecondsPerRealMillisecond = speedMultiplier * millisecondsPerDay / 1000; // ms/ms
+
+    const simulationTimeElapsed = deltaTime * simulationMillisecondsPerRealMillisecond; // in milliseconds
+
+    // Update the simulation date
+    simulationCurrentDate.setTime(simulationCurrentDate.getTime() + simulationTimeElapsed);
+
+    // Update the date display
+    dateDiv.textContent = simulationCurrentDate.toLocaleString();
 
   // Rotate planets
   planets.forEach((p) => {
@@ -280,23 +361,7 @@ window.addEventListener("resize", () => {
   });
 });
 
-// Create and style the date label
-const dateDiv = document.createElement("div");
-dateDiv.className = "date-label";
-dateDiv.textContent = "November 2, 2024";
 
-// Style the date label
-dateDiv.style.position = "absolute";
-dateDiv.style.top = "10px";
-dateDiv.style.width = "100%";
-dateDiv.style.textAlign = "center";
-dateDiv.style.fontFamily = "Poppins";
-dateDiv.style.fontWeight = "bold";
-dateDiv.style.fontSize = "20px";
-dateDiv.style.color = "white";
-dateDiv.style.pointerEvents = "none";
-
-document.body.appendChild(dateDiv);
 
 document.getElementById("super-prev").addEventListener("click", () => {
   speedMultiplier = -5;
@@ -446,8 +511,26 @@ function showPopup(data) {
   currentPopup = popup;
 }
 
+// Create and style the date label
+const dateDiv = document.createElement("div");
+dateDiv.className = "date-label";
+dateDiv.textContent = "November 2, 2024";
+
+// Style the date label
+dateDiv.style.position = "absolute";
+dateDiv.style.top = "10px";
+dateDiv.style.width = "100%";
+dateDiv.style.textAlign = "center";
+dateDiv.style.fontFamily = "Poppins";
+dateDiv.style.fontWeight = "bold";
+dateDiv.style.fontSize = "20px";
+dateDiv.style.color = "white";
+dateDiv.style.pointerEvents = "none";
+
 function initializeSolarSystem() {
-  fetch("planetData.json")
+    document.body.appendChild(dateDiv);
+    document.getElementById('showAssistant').style.display = 'flex';
+    fetch("planetData.json")
     .then((response) => response.json())
     .then((data) => {
       planetData = data;
@@ -458,16 +541,14 @@ function initializeSolarSystem() {
     .catch((error) => console.error("Error loading planet data:", error));
 }
 
-const apiKey = '';
+const apiKey = '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';
 
 document.getElementById('sendMessage').addEventListener('click', async () => {
     const input = document.getElementById('userInput').value;
     const responseElement = document.getElementById('response');
 
-    // Clear previous response
     responseElement.textContent = 'Thinking...';
 
-    // Call OpenAI API
     try {
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
@@ -476,7 +557,7 @@ document.getElementById('sendMessage').addEventListener('click', async () => {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: "gpt-3.5-turbo",  // Or "gpt-4" if available
+                model: "gpt-3.5-turbo", 
                 messages: [
                     { role: "system", content: "You are a helpful assistant." },
                     { role: "user", content: input }
