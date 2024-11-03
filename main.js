@@ -1,32 +1,34 @@
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+// main.js
 
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('button').addEventListener('click', () => {
-        document.getElementById('button').style.display = 'none';
-        document.getElementById('speedModifier').style.display = 'flex';
-        document.getElementById('introScreen').style.display = 'none';
-        document.getElementById('toggleOrbits').style.display = 'block';
-        initializeSolarSystem();
-    });
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("button").addEventListener("click", () => {
+    document.getElementById("button").style.display = "none";
+    document.getElementById("speedModifier").style.display = "flex";
+    document.getElementById("introScreen").style.display = "none";
+    document.getElementById("toggleOrbits").style.display = "block";
+    initializeSolarSystem();
+  });
 });
 
-// Constant
+// Constants
 let speedMultiplier = 0.1;
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x000011);
 const camera = new THREE.PerspectiveCamera(
-    75,
-    window.innerWidth / window.innerHeight,
-    0.1,
-    1000
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
 );
 camera.position.y = 2;
 
 // Create renderer
 const renderer = new THREE.WebGLRenderer({
-    antialias: true,
+  antialias: true,
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -36,38 +38,33 @@ const textureLoader = new THREE.TextureLoader();
 
 // Create stars in the background
 function addStars() {
-    const starGeometry = new THREE.BufferGeometry();
-    const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
+  const starGeometry = new THREE.BufferGeometry();
+  const starMaterial = new THREE.PointsMaterial({ color: 0xffffff });
 
-    const starCount = 10000;
-    const starVertices = [];
+  const starCount = 10000;
+  const starVertices = [];
 
-    for (let i = 0; i < starCount; i++) {
-        const x = THREE.MathUtils.randFloatSpread(2000);
-        const y = THREE.MathUtils.randFloatSpread(2000);
-        const z = THREE.MathUtils.randFloatSpread(2000);
-        starVertices.push(x, y, z);
-    }
+  for (let i = 0; i < starCount; i++) {
+    const x = THREE.MathUtils.randFloatSpread(2000);
+    const y = THREE.MathUtils.randFloatSpread(2000);
+    const z = THREE.MathUtils.randFloatSpread(2000);
+    starVertices.push(x, y, z);
+  }
 
-    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
-    const stars = new THREE.Points(starGeometry, starMaterial);
-    scene.add(stars);
+  starGeometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(starVertices, 3)
+  );
+  const stars = new THREE.Points(starGeometry, starMaterial);
+  scene.add(stars);
 }
 
 addStars(); // Call the function to add stars
 renderer.render(scene, camera);
 
-// Load textures for the planets
-const sunTexture = textureLoader.load('textures/sun.jpg');
-const mercuryTexture = textureLoader.load('textures/mercury.jpg');
-const venusTexture = textureLoader.load('textures/venus.jpg');
-const earthTexture = textureLoader.load('textures/earth.jpg');
-const marsTexture = textureLoader.load('textures/mars.jpg');
-const jupiterTexture = textureLoader.load('textures/jupiter.jpg');
-const saturnTexture = textureLoader.load('textures/saturn.jpg');
-const uranusTexture = textureLoader.load('textures/uranus.jpg');
-const neptuneTexture = textureLoader.load('textures/neptune.jpg');
-const asteroidTexture = textureLoader.load('textures/asteroid.jpg');
+// Load textures for the sun and asteroid
+const sunTexture = textureLoader.load("textures/sun.jpg");
+const asteroidTexture = textureLoader.load("textures/asteroid.jpg");
 
 const sizeMultiplier = 0.1;
 // Create a big ball for the sun
@@ -76,94 +73,122 @@ const sunMaterial = new THREE.MeshBasicMaterial({ map: sunTexture });
 const sun = new THREE.Mesh(sunGeometry, sunMaterial);
 scene.add(sun);
 
-// Planet data (size, distance from sun, speed of orbit)
-const planetData = [
-    { name: 'MERCURY', size: 0.5, distance: 0.39, texture: mercuryTexture, speed: 0.08264, rotationSpeed: 0.02, initialAngleDeg: 51.57 },
-    { name: 'VENUS', size: 0.7, distance: 0.72, texture: venusTexture, speed: 0.03232, rotationSpeed: 0.01, initialAngleDeg: 142.2 },
-    { name: 'EARTH', size: 0.75, distance: 1, texture: earthTexture, speed: 0.01992, rotationSpeed: 0.03, initialAngleDeg: 303.84 },
-    { name: 'MARS', size: 0.6, distance: 1.52, texture: marsTexture, speed: 0.01059, rotationSpeed: 0.04, initialAngleDeg: 78.12 },
-    { name: 'JUPITER', size: 1.2, distance: 5.2, texture: jupiterTexture, speed: 0.001673, rotationSpeed: 0.05, initialAngleDeg: 33.84 },
-    { name: 'SATURN', size: 1, distance: 9.54, texture: saturnTexture, speed: 0.0009294, rotationSpeed: 0.03, initialAngleDeg: 303.73 },
-    { name: 'URANUS', size: 0.9, distance: 19.2, texture: uranusTexture, speed: 0.0002370, rotationSpeed: 0.02, initialAngleDeg: 106.45 },
-    { name: 'NEPTUNE', size: 0.85, distance: 30.06, texture: neptuneTexture, speed: 0.0001208, rotationSpeed: 0.02, initialAngleDeg: 54.3 },
-];
-
 // Arrays to hold planet meshes and orbits
 const planets = [];
 const orbits = [];
 const labels = []; // Array to hold label elements
 
-// Create planets and labels
-planetData.forEach(data => {
+let planetData = [];
+
+function initializePlanets() {
+  // Create planets and labels
+  planetData.forEach((data) => {
+    // Load the texture for this planet
+    const planetTexture = textureLoader.load(data.texture);
+
     // Create planet mesh
-    const geometry = new THREE.SphereGeometry(data.size * sizeMultiplier, 32, 32);
-    const planetMaterial = new THREE.MeshBasicMaterial({ map: data.texture });
+    const geometry = new THREE.SphereGeometry(
+      data.size * sizeMultiplier,
+      32,
+      32
+    );
+    const planetMaterial = new THREE.MeshBasicMaterial({ map: planetTexture });
     const planet = new THREE.Mesh(geometry, planetMaterial);
     planet.position.set(data.distance, 0, 0);
+
+    // Store the data in userData
+    planet.userData = data;
     scene.add(planet);
-    
+
     // Compute initial angle in radians
     const initialAngleRad = (data.initialAngleDeg * Math.PI) / 180;
 
-    planets.push({ planet, distance: data.distance, speed: data.speed, angle: initialAngleRad, rotationSpeed: data.rotationSpeed });
+    planets.push({
+      planet,
+      distance: data.distance,
+      speed: data.speed,
+      angle: initialAngleRad,
+      rotationSpeed: data.rotationSpeed,
+    });
 
     // Create the label as an HTML div
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'label';
+    const labelDiv = document.createElement("div");
+    labelDiv.className = "label";
     labelDiv.textContent = data.name;
-    labelDiv.style.color = 'lightblue';
-    labelDiv.style.position = 'absolute';
-    labelDiv.style.pointerEvents = 'none';
-    labelDiv.style.whiteSpace = 'nowrap';
+    labelDiv.style.color = "lightblue";
+    labelDiv.style.position = "absolute";
+    labelDiv.style.fontFamily = "Poppins";
+    labelDiv.style.fontSize = "20px";
+    labelDiv.style.pointerEvents = "none";
+    labelDiv.style.whiteSpace = "nowrap";
+    labelDiv.style.textShadow = "1px 1px 0 black";
     document.body.appendChild(labelDiv);
 
     labels.push({ planet: planet, labelDiv: labelDiv });
 
     // Create the orbit ring
-    const orbitGeometry = new THREE.RingGeometry(data.distance - 0.02 * sizeMultiplier, data.distance + 0.02 * sizeMultiplier, 64);
-    const orbitMaterial = new THREE.MeshBasicMaterial({ color: 0x6faeff, side: THREE.DoubleSide });
+    const orbitGeometry = new THREE.RingGeometry(
+      data.distance - 0.02 * sizeMultiplier,
+      data.distance + 0.02 * sizeMultiplier,
+      64
+    );
+    const orbitMaterial = new THREE.MeshBasicMaterial({
+      color: 0x6faeff,
+      side: THREE.DoubleSide,
+    });
     const orbit = new THREE.Mesh(orbitGeometry, orbitMaterial);
     orbit.rotation.x = Math.PI / 2;
     scene.add(orbit);
     orbits.push(orbit);
-});
+  });
+}
 
 // Create the asteroid belt
 const asteroidBelt = new THREE.Group();
 scene.add(asteroidBelt);
 
 function createAsteroidBelt() {
-    const asteroidCount = 1500; // Number of asteroids
-    const beltInnerRadius = 2.0; // Just beyond Mars' orbit
-    const beltOuterRadius = 3.2; // Just before Jupiter's orbit
-    const asteroidMaterial = new THREE.MeshBasicMaterial({ map: asteroidTexture, color: 0x656565 });
+  const asteroidCount = 1500; // Number of asteroids
+  const beltInnerRadius = 2.0; // Just beyond Mars' orbit
+  const beltOuterRadius = 3.2; // Just before Jupiter's orbit
+  const asteroidMaterial = new THREE.MeshBasicMaterial({
+    map: asteroidTexture,
+    color: 0x656565,
+  });
 
-    for (let i = 0; i < asteroidCount; i++) {
-        const asteroidGeometry = new THREE.SphereGeometry(THREE.MathUtils.randFloat(0, 0.3) * sizeMultiplier, 8, 8); // Small spheres
-        const asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial);
+  for (let i = 0; i < asteroidCount; i++) {
+    const asteroidGeometry = new THREE.SphereGeometry(
+      THREE.MathUtils.randFloat(0, 0.3) * sizeMultiplier,
+      8,
+      8
+    ); // Small spheres
+    const asteroid = new THREE.Mesh(asteroidGeometry, asteroidMaterial);
 
-        // Random distance within the belt
-        const distance = THREE.MathUtils.randFloat(beltInnerRadius, beltOuterRadius);
+    // Random distance within the belt
+    const distance = THREE.MathUtils.randFloat(
+      beltInnerRadius,
+      beltOuterRadius
+    );
 
-        // Random angle around the sun
-        const angle = THREE.MathUtils.randFloat(0, Math.PI * 2);
+    // Random angle around the sun
+    const angle = THREE.MathUtils.randFloat(0, Math.PI * 2);
 
-        // Random height to give thickness to the belt
-        const height = THREE.MathUtils.randFloatSpread(0.1); // Slight vertical spread
+    // Random height to give thickness to the belt
+    const height = THREE.MathUtils.randFloatSpread(0.1); // Slight vertical spread
 
-        asteroid.position.set(
-            Math.cos(angle) * distance,
-            height,
-            Math.sin(angle) * distance
-        );
+    asteroid.position.set(
+      Math.cos(angle) * distance,
+      height,
+      Math.sin(angle) * distance
+    );
 
-        // Random speed for asteroid orbit
-        const speed = THREE.MathUtils.randFloat(0.0005, 0.001);
+    // Random speed for asteroid orbit
+    const speed = THREE.MathUtils.randFloat(0.0005, 0.001);
 
-        asteroid.userData = { distance, angle, speed };
+    asteroid.userData = { distance, angle, speed };
 
-        asteroidBelt.add(asteroid);
-    }
+    asteroidBelt.add(asteroid);
+  }
 }
 
 createAsteroidBelt(); // Generate the asteroid belt
@@ -177,147 +202,308 @@ controls.enableRotate = true;
 controls.enablePan = false;
 
 function animate() {
-    requestAnimationFrame(animate);
+  requestAnimationFrame(animate);
 
-    // Rotate planets
-    planets.forEach(p => {
-        p.angle += p.speed * speedMultiplier;
-        p.planet.position.set(
-            Math.cos(p.angle) * p.distance,
-            0,
-            Math.sin(p.angle) * p.distance
-        );
-        p.planet.rotation.y += p.rotationSpeed * speedMultiplier;
-    });
+  // Rotate planets
+  planets.forEach((p) => {
+    p.angle += p.speed * speedMultiplier;
+    p.planet.position.set(
+      Math.cos(p.angle) * p.distance,
+      0,
+      Math.sin(p.angle) * p.distance
+    );
+    p.planet.rotation.y += p.rotationSpeed * speedMultiplier;
+  });
 
-    // Update asteroid belt
-    asteroidBelt.children.forEach(asteroid => {
-        asteroid.userData.angle += asteroid.userData.speed * speedMultiplier;
-        asteroid.position.set(
-            Math.cos(asteroid.userData.angle) * asteroid.userData.distance,
-            asteroid.position.y, // Keep the original height
-            Math.sin(asteroid.userData.angle) * asteroid.userData.distance
-        );
-    });
+  // Update asteroid belt
+  asteroidBelt.children.forEach((asteroid) => {
+    asteroid.userData.angle += asteroid.userData.speed * speedMultiplier;
+    asteroid.position.set(
+      Math.cos(asteroid.userData.angle) * asteroid.userData.distance,
+      asteroid.position.y, // Keep the original height
+      Math.sin(asteroid.userData.angle) * asteroid.userData.distance
+    );
+  });
 
-    // Update labels' positions
-    labels.forEach(l => {
-        const vector = new THREE.Vector3();
-        l.planet.getWorldPosition(vector);
+  // Update labels' positions
+  labels.forEach((l) => {
+    const vector = new THREE.Vector3();
+    l.planet.getWorldPosition(vector);
 
-        // Project the position to normalized device coordinates (NDC)
-        vector.project(camera);
+    // Project the position to normalized device coordinates (NDC)
+    vector.project(camera);
 
-        // Convert the NDC to screen coordinates
-        const x = (vector.x * 0.5 + 0.5) * renderer.domElement.clientWidth;
-        const y = (-vector.y * 0.5 + 0.5) * renderer.domElement.clientHeight;
+    // Convert the NDC to screen coordinates
+    const x = (vector.x * 0.5 + 0.5) * renderer.domElement.clientWidth;
+    const y = (-vector.y * 0.5 + 0.5) * renderer.domElement.clientHeight;
 
-        // Adjust the label's position in screen space
-        const labelWidth = l.labelDiv.clientWidth;
-        const labelHeight = l.labelDiv.clientHeight;
-        l.labelDiv.style.left = `${x - labelWidth / 2}px`; // Center the label horizontally
-        l.labelDiv.style.top = `${y - labelHeight - 10}px`; // Position above the planet
-    });
+    // Adjust the label's position in screen space
+    const labelWidth = l.labelDiv.clientWidth;
+    const labelHeight = l.labelDiv.clientHeight;
+    l.labelDiv.style.left = `${x - labelWidth / 2}px`; // Center the label horizontally
+    l.labelDiv.style.top = `${y - labelHeight - 10}px`; // Position above the planet
+  });
 
-    // Rotate the sun
-    sun.rotation.y += 0.002 * speedMultiplier;
+  // Rotate the sun
+  sun.rotation.y += 0.002 * speedMultiplier;
 
-    controls.update();
+  controls.update();
 
-    renderer.render(scene, camera);
+  renderer.render(scene, camera);
 }
 
 // Event listener to toggle orbit visibility
-document.getElementById('toggleOrbits').addEventListener('click', () => {
-    orbits.forEach(orbit => {
-        orbit.visible = !orbit.visible;
-    });
+document.getElementById("toggleOrbits").addEventListener("click", () => {
+  orbits.forEach((orbit) => {
+    orbit.visible = !orbit.visible;
+  });
 });
 
 // Get references to the slider and the speed display
-const speedSlider = document.getElementById('speedSlider');
-const speedValue = document.getElementById('speedValue');
-speedSlider.addEventListener('input', () => {
-    speedMultiplier = parseFloat(speedSlider.value);
-    speedValue.textContent = speedMultiplier.toFixed(1) + 'x';
+const speedSlider = document.getElementById("speedSlider");
+const speedValue = document.getElementById("speedValue");
+speedSlider.addEventListener("input", () => {
+  speedMultiplier = parseFloat(speedSlider.value);
+  speedValue.textContent = speedMultiplier.toFixed(1) + "x";
 });
 
 // Adjust camera and renderer on window resize
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // Update label positions on resize
-    labels.forEach(l => {
-        l.labelDiv.style.left = '';
-        l.labelDiv.style.top = '';
-    });
+  // Update label positions on resize
+  labels.forEach((l) => {
+    l.labelDiv.style.left = "";
+    l.labelDiv.style.top = "";
+  });
 });
 
 // Create and style the date label
-const dateDiv = document.createElement('div');
-dateDiv.className = 'date-label';
-dateDiv.textContent = 'November 2, 2024';
+const dateDiv = document.createElement("div");
+dateDiv.className = "date-label";
+dateDiv.textContent = "November 2, 2024";
 
 // Style the date label
-dateDiv.style.position = 'absolute';
-dateDiv.style.top = '10px';
-dateDiv.style.width = '100%';
-dateDiv.style.textAlign = 'center';
-dateDiv.style.fontWeight = 'bold';
-dateDiv.style.fontSize = '20px';
-dateDiv.style.color = 'white';
-dateDiv.style.pointerEvents = 'none';
+dateDiv.style.position = "absolute";
+dateDiv.style.top = "10px";
+dateDiv.style.width = "100%";
+dateDiv.style.textAlign = "center";
+dateDiv.style.fontFamily = "Poppins";
+dateDiv.style.fontWeight = "bold";
+dateDiv.style.fontSize = "20px";
+dateDiv.style.color = "white";
+dateDiv.style.pointerEvents = "none";
 
 document.body.appendChild(dateDiv);
 
-document.getElementById('super-prev').addEventListener('click', () => {speedMultiplier = -5});
-document.getElementById('prev').addEventListener('click', () => {speedMultiplier = -2});
-document.getElementById('pause-play').addEventListener('click', () => {
-    if (speedMultiplier == 0) {
-        speedMultiplier = 0.1;
-    }
-    else {
-        speedMultiplier = 0;
-    }
+document.getElementById("super-prev").addEventListener("click", () => {
+  speedMultiplier = -5;
 });
-document.getElementById('fast-forward').addEventListener('click', () => {speedMultiplier = 2});
-document.getElementById('super-fast').addEventListener('click', () => {speedMultiplier = 5});
+document.getElementById("prev").addEventListener("click", () => {
+  speedMultiplier = -2;
+});
+document.getElementById("pause-play").addEventListener("click", () => {
+  if (speedMultiplier == 0) {
+    speedMultiplier = 0.1;
+  } else {
+    speedMultiplier = 0;
+  }
+});
+document.getElementById("fast-forward").addEventListener("click", () => {
+  speedMultiplier = 2;
+});
+document.getElementById("super-fast").addEventListener("click", () => {
+  speedMultiplier = 5;
+});
 
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function zoomAnimate() {
-    for (let i = 500; i >= 2; i-= 7) {
-        camera.position.set(i, i, i);
-        await sleep(3);
-        if (i < 10) {
-            i += 6.9;
-        }
-        else if (i < 60) {
-            i += 6.75;
-        }
-        else if (i < 80) {
-            i += 6.4
-        }
-        else if (i < 100) {
-            i += 6;
-        }
-        else if (i < 200) {
-            i += 5;
-        }
-        else if (i < 300) {
-            i += 4;
-        }
-        else if (i < 400) {
-            i += 3;
-        }
+  for (let i = 500; i >= 2; i -= 7) {
+    camera.position.set(i, i, i);
+    await sleep(3);
+    if (i < 10) {
+      i += 6.9;
+    } else if (i < 60) {
+      i += 6.75;
+    } else if (i < 80) {
+      i += 6.4;
+    } else if (i < 100) {
+      i += 6;
+    } else if (i < 200) {
+      i += 5;
+    } else if (i < 300) {
+      i += 4;
+    } else if (i < 400) {
+      i += 3;
     }
+  }
+}
+
+// Raycaster and mouse vector
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let currentPopup = null; // Global variable to track the current popup
+
+// Event listener for clicks
+renderer.domElement.addEventListener("click", onClick, false);
+
+function onClick(event) {
+  // Calculate mouse position in normalized device coordinates (-1 to +1)
+  mouse.x = (event.clientX / renderer.domElement.clientWidth) * 2 - 1;
+  mouse.y = -(event.clientY / renderer.domElement.clientHeight) * 2 + 1;
+
+  // Update the raycaster
+  raycaster.setFromCamera(mouse, camera);
+
+  // Calculate objects intersecting the ray
+  const intersects = raycaster.intersectObjects(planets.map((p) => p.planet));
+
+  if (intersects.length > 0) {
+    const clickedPlanet = intersects[0].object;
+    const planetData = clickedPlanet.userData;
+    showPopup(planetData);
+  }
+}
+
+function showPopup(data) {
+  // If there's already a popup open, remove it
+  if (currentPopup) {
+    document.body.removeChild(currentPopup);
+    currentPopup = null;
+  }
+
+  // Create a popup div
+  const popup = document.createElement("div");
+  popup.className = "planet-popup";
+
+  // Style the popup
+  popup.style.position = "absolute";
+  popup.style.top = "10px";
+  popup.style.right = "10px";
+  popup.style.padding = "20px";
+  popup.style.backgroundColor = "rgba(0, 0, 0, 0.8)";
+  popup.style.color = "white";
+  popup.style.border = "1px solid white";
+  popup.style.borderRadius = "10px";
+  popup.style.zIndex = "1000";
+  popup.style.maxWidth = "300px";
+  popup.style.textAlign = "left";
+  popup.style.fontFamily = "Poppins";
+
+  // Add content to the popup
+  const title = document.createElement("h2");
+  title.textContent = data.name;
+  popup.appendChild(title);
+
+  const tempPara = document.createElement("p");
+  tempPara.innerHTML = `<strong>Temperature:</strong> ${data.temperature}`;
+  popup.appendChild(tempPara);
+
+  const massPara = document.createElement("p");
+  massPara.innerHTML = `<strong>Mass:</strong> ${data.mass}`;
+  popup.appendChild(massPara);
+
+  const radiusPara = document.createElement("p");
+  radiusPara.innerHTML = `<strong>Radius:</strong> ${data.radius}`;
+  popup.appendChild(radiusPara);
+
+  const periodPara = document.createElement("p");
+  periodPara.innerHTML = `<strong>Orbital Period:</strong> ${data.period} days`;
+  popup.appendChild(periodPara);
+
+  const axisPara = document.createElement("p");
+  axisPara.innerHTML = `<strong>Semi-Major Axis:</strong> ${data.semiMajorAxis} AU`;
+  popup.appendChild(axisPara);
+
+  // Create the close button
+  const closeButton = document.createElement("button");
+  closeButton.textContent = "Close";
+  closeButton.style.marginTop = "10px";
+  closeButton.style.padding = "5px 10px";
+  closeButton.style.cursor = "pointer";
+  closeButton.style.backgroundColor = "#ffffff";
+  closeButton.style.color = "#000";
+  closeButton.style.border = "none";
+  closeButton.style.borderRadius = "5px";
+  closeButton.style.fontSize = "14px";
+
+  // Attach the event listener directly to the button
+  closeButton.addEventListener("click", () => {
+    document.body.removeChild(popup);
+    currentPopup = null; // Reset the currentPopup variable
+  });
+
+  popup.appendChild(closeButton);
+
+  document.body.appendChild(popup);
+
+  // Update the currentPopup variable
+  currentPopup = popup;
 }
 
 function initializeSolarSystem() {
-    zoomAnimate();
-    animate();
+  fetch("planetData.json")
+    .then((response) => response.json())
+    .then((data) => {
+      planetData = data;
+      initializePlanets();
+      zoomAnimate();
+      animate();
+    })
+    .catch((error) => console.error("Error loading planet data:", error));
 }
+
+const apiKey = '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';
+
+document.getElementById('sendMessage').addEventListener('click', async () => {
+    const input = document.getElementById('userInput').value;
+    const responseElement = document.getElementById('response');
+
+    // Clear previous response
+    responseElement.textContent = 'Thinking...';
+
+    // Call OpenAI API
+    try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: "gpt-3.5-turbo",  // Or "gpt-4" if available
+                messages: [
+                    { role: "system", content: "You are a helpful assistant." },
+                    { role: "user", content: input }
+                ],
+                max_tokens: 150
+            })
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            responseElement.textContent = data.choices[0].message.content.trim();
+        } else {
+            responseElement.textContent = 'Error: ' + response.statusText;
+        }
+    } catch (error) {
+        responseElement.textContent = 'Error: ' + error.message;
+    }
+
+    document.getElementById('userInput').value = '';
+});
+
+document.getElementById('closeButton').addEventListener('click', () => {
+    document.getElementById('assistant').style.display = 'none';
+    document.getElementById('showAssistant').style.display = 'flex';
+});
+
+document.getElementById('showAssistant').addEventListener('click', () => {
+    document.getElementById('assistant').style.display = 'flex';
+    document.getElementById('showAssistant').style.display = 'none';
+});
