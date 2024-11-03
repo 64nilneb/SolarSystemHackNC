@@ -2,6 +2,7 @@
 
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader';
 
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("button").addEventListener("click", () => {
@@ -61,6 +62,22 @@ function addStars() {
 
 //addStars(); // Call the function to add stars
 renderer.render(scene, camera);
+
+// Initialize PMREMGenerator
+const pmremGenerator = new THREE.PMREMGenerator(renderer);
+pmremGenerator.compileEquirectangularShader();
+
+// Load the EXR texture and set it as the background
+const exrLoader = new EXRLoader();
+exrLoader.load('stars.exr', function (texture) {
+    const exrCubeRenderTarget = pmremGenerator.fromEquirectangular(texture);
+    scene.background = exrCubeRenderTarget.texture;
+    texture.dispose();
+});
+
+// Set renderer tone mapping for HDR
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
 
 // Load textures for the sun and asteroid
 const sunTexture = textureLoader.load("textures/sun.jpg");

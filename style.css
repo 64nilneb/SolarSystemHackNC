@@ -4,6 +4,7 @@ body, html {
     overflow: hidden;
     height: 100%;
     width: 100%;
+    font-family: Michroma;
 }
 
 canvas {
@@ -206,6 +207,7 @@ top: 0;
 }
 
 #sendMessage {
+    font-family: Michroma;
     align-self: flex-center;
     background-color: #007bff;
     color: white;
