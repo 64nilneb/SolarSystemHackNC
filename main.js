@@ -470,11 +470,11 @@ function showPopup(data) {
   popup.appendChild(tempPara);
 
   const massPara = document.createElement("p");
-  massPara.innerHTML = `<strong>Mass:</strong> ${data.mass}`;
+  massPara.innerHTML = `<strong>Mass:</strong> ${data.mass} x 10<sup>${data.exponent}</sup> kg`;
   popup.appendChild(massPara);
 
   const radiusPara = document.createElement("p");
-  radiusPara.innerHTML = `<strong>Radius:</strong> ${data.radius}`;
+  radiusPara.innerHTML = `<strong>Radius:</strong> ${data.radius} kg`;
   popup.appendChild(radiusPara);
 
   const periodPara = document.createElement("p");
