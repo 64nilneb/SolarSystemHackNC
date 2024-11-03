@@ -171,7 +171,7 @@ function createAsteroidBelt() {
     const asteroidCount = 1500; // Number of asteroids
     const beltInnerRadius = 2.0; // Just beyond Mars' orbit
     const beltOuterRadius = 3.2; // Just before Jupiter's orbit
-    const asteroidMaterial = new THREE.MeshBasicMaterial({ map: asteroidTexture, color: 0x656565 });
+    const asteroidMaterial = new THREE.MeshStandardMaterial({ map: asteroidTexture, color: 0xCDCDCD, roughness:1,metalness: 1 });
 
     for (let i = 0; i < asteroidCount; i++) {
         const asteroidGeometry = new THREE.SphereGeometry(THREE.MathUtils.randFloat(0, 0.3) * sizeMultiplier, 8, 8); // Small spheres
@@ -212,7 +212,7 @@ function createKuiperBelt() {
     const beltInnerRadius = 45; // Just beyond Neptune's orbit (30 AU)
     const beltOuterRadius = 50; // Up to 50 AU from the Sun
 
-    const kuiperBeltMaterial = new THREE.MeshBasicMaterial({ map: asteroidTexture, color: 0x666666 });
+    const kuiperBeltMaterial = new THREE.MeshStandardMaterial({ map: asteroidTexture,  roughness:1,metalness: 0.7 });
 
     for (let i = 0; i < kuiperBeltCount; i++) {
         const kuiperObjectGeometry = new THREE.SphereGeometry(THREE.MathUtils.randFloat(1,3) * sizeMultiplier, 8, 8);
