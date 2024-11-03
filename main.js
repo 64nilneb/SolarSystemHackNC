@@ -458,7 +458,7 @@ function initializeSolarSystem() {
     .catch((error) => console.error("Error loading planet data:", error));
 }
 
-const apiKey = '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';
+const apiKey = '';
 
 document.getElementById('sendMessage').addEventListener('click', async () => {
     const input = document.getElementById('userInput').value;
