@@ -1,243 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Michroma:wght@400;700&display=swap"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap"
+    />
+    <title>Solar System Explorer</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Michroma:wght@400;700&display=swap">
-    <title>Three.js Solar System</title>
-    <style>
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            height: 100%;
-            width: 100%;
-        }
-
-        canvas {
-            display: block;
-            /* Prevent scrollbars */
-        }
-
-        #toggleOrbits {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 10px;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            cursor: pointer;
-            z-index: 1;
-        }
-
-        button:hover {
-            background-color: rgba(0, 0, 0, 0.7);
-        }
-
-        #toggleOrbits {
-            display: none;
-        }
-
-        #slider {
-            display: none;
-        }
-
-        .button {
-        -moz-appearance: none;
-        -webkit-appearance: none;
-        appearance: none;
-        border: none;
-        background: none;
-        color: #0f1923;
-        cursor: pointer;
-        position: relative;
-        padding: 8px;
-        width: 400px;
-        margin-bottom: 20px;
-        text-transform: uppercase;
-        font-weight: bold;
-        font-size: 32px;
-        transition: all .15s ease;
-        }
-
-        .button::before,
-        .button::after {
-        content: '';
-        display: block;
-        position: absolute;
-        right: 0;
-        left: 0;
-        height: calc(50% - 5px);
-        border: 1px solid #7D8082;
-        transition: all .15s ease;
-        }
-
-        .button::before {
-        top: 0;
-        border-bottom-width: 0;
-        }
-
-        .button::after {
-        bottom: 0;
-        border-top-width: 0;
-        }
-
-        .button:active,
-        .button:focus {
-        outline: none;
-        }
-
-        .button:active::before,
-        .button:active::after {
-        right: 3px;
-        left: 3px;
-        }
-
-        .button:active::before {
-        top: 3px;
-        }
-
-        .button:active::after {
-        bottom: 3px;
-        }
-
-        .button_lg {
-        position: relative;
-        display: block;
-        padding: 10px 20px;
-        color: #fff;
-        background-color: #0f1923;
-        overflow: hidden;
-        box-shadow: inset 0px 0px 0px 1px transparent;
-        }
-
-        .button_lg::before {
-        content: '';
-        display: block;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 2px;
-        height: 2px;
-        background-color: #0f1923;
-        }
-
-        .button_lg::after {
-        content: '';
-        display: block;
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        width: 4px;
-        height: 4px;
-        background-color: #0f1923;
-        transition: all .2s ease;
-        }
-
-        .button_sl {
-        display: block;
-        position: absolute;
-        top: 0;
-        bottom: -1px;
-        left: -8px;
-        width: 0;
-        background-color: rgba(255,50,50,1);
-        transform: skew(-15deg);
-        transition: all .2s ease;
-        }
-
-        .button_text {
-        position: relative;
-        }
-
-        .button:hover {
-        color: #0f1923;
-        }
-
-        .button:hover .button_sl {
-        width: calc(100% + 15px);
-        }
-
-        .button:hover .button_lg::after {
-        background-color: #fff;
-        }
-
-        .speed-modifiers {
-        display: none;
-        flex-direction: row; 
-        gap: 10px; 
-        position: fixed; 
-        bottom: 20px; 
-        right: 20px; 
-        z-index: 1000;
-        }
-
-        .speed-modifiers button {
-            padding: 10px 20px; 
-            font-size: 16px;
-            cursor: pointer; 
-            background-color: rgba(110,110,110,1); 
-            color: white;
-            border: none; 
-            border-radius: 5px; 
-            transition: background-color 0.3s; 
-        }
-
-        .speed-modifiers button:hover {
-            background-color: rgba(50,50,50,1);
-        }
-    </style>
-</head>
-
-<body>
+  <body>
     <button id="toggleOrbits">Toggle Orbits</button>
 
-    <div id = "introScreen" style = "position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(123,123,123,0.5);
-    width: 600px;
-    height: 600px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;">
-        <h1 style = "color: white;
-        font-size: 40px;
-        margin-bottom: 100px;
-        font-family:'Michroma'">Solar System Viewer</h1>
-        
+    <div
+      id="introScreen"
+      style="
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(123, 123, 123, 0.5);
+        width: 600px;
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+      "
+    >
+      <h1
+        style="
+          color: white;
+          font-size: 40px;
+          margin-bottom: 100px;
+          font-family: 'Michroma';
+        "
+      >
+        The Solar System
+      </h1>
 
-        <button class="button" id = "button">
-            <span class="button_lg">
-                <span class="button_sl"></span>
-                <span class="button_text" style=" font-family:'Michroma">Begin</span>
-            </span>
-        </button>
+      <button class="button" id="button">
+        <span class="button_lg">
+          <span class="button_sl"></span>
+          <span class="button_text" style="font-family: Poppins">START</span>
+        </span>
+      </button>
     </div>
 
-    <div id = "slider" style="position: fixed; bottom: 10px; right: 10px; z-index: 10; background: rgba(0, 0, 0, 0.5); padding: 10px; border-radius: 10px; color: white;">
-        <label for="speedSlider">Speed:</label>
-        <input id="speedSlider" type="range" min="-10" max="10" value="1" step="0.1" style="width: 150px;">
-        <span id="speedValue">1x</span>
+    <div
+      id="slider"
+      style="
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 10;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 10px;
+        border-radius: 10px;
+        color: white;
+      "
+    >
+      <label for="speedSlider">Speed:</label>
+      <input
+        id="speedSlider"
+        type="range"
+        min="-10"
+        max="10"
+        value="1"
+        step="0.1"
+        style="width: 150px"
+      />
+      <span id="speedValue">1x</span>
     </div>
 
-    <div class="speed-modifiers" id = "speedModifier">
-        <button id="super-prev"><i class="fas fa-backward"></i></button>
-        <button id="prev"><i class="fas fa-step-backward"></i></button>
-        <button id="pause-play"><i class="fas fa-play"></i><i class="fas fa-pause"></i></button>
-        <button id="fast-forward"><i class="fas fa-step-forward"></i></button>
-        <button id="super-fast"><i class="fas fa-forward"></i></button>
+    <div class="speed-modifiers" id="speedModifier">
+      <button id="super-prev"><i class="fas fa-backward"></i></button>
+      <button id="prev"><i class="fas fa-step-backward"></i></button>
+      <button id="pause-play">
+        <i class="fas fa-play"></i><i class="fas fa-pause"></i>
+      </button>
+      <button id="fast-forward"><i class="fas fa-step-forward"></i></button>
+      <button id="super-fast"><i class="fas fa-forward"></i></button>
+    </div>
+
+    <button id="showAssistant" style="font-family: Poppins">
+      Ask KeplerAI
+    </button>
+
+    <div id="assistant">
+      <button id="closeButton" title="Close">✖</button>
+      <h2 style="font-family: Michroma; align-self: center">Celestial Guide</h2>
+      <textarea
+        id="userInput"
+        placeholder="What would you like to learn?"
+        rows="4"
+        cols="50"
+        style="width: 300px; height: 100px"
+      ></textarea>
+      <button id="sendMessage">Ask KeplerAI</button>
+      <pre id="response"></pre>
     </div>
 
     <script type="module" src="main.js"></script>
-</body>
-
+  </body>
 </html>
