@@ -36,7 +36,8 @@ renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
 const textureLoader = new THREE.TextureLoader();
-
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.3); 
+scene.add(ambientLight);
 // Create stars in the background
 function addStars() {
   const starGeometry = new THREE.BufferGeometry();
@@ -109,7 +110,7 @@ function initializePlanets() {
       32,
       32
     );
-    const planetMaterial = new THREE.MeshBasicMaterial({ map: planetTexture });
+    const planetMaterial = new THREE.MeshStandardMaterial({ map: planetTexture, roughness:1,metalness: 0 });
     const planet = new THREE.Mesh(geometry, planetMaterial);
     planet.position.set(data.distance, 0, 0);
 
@@ -199,6 +200,10 @@ function createAsteroidBelt() {
         asteroidBelt.add(asteroid);
     }
 }
+const sunLight = new THREE.PointLight(0xffffff, 4, 500000, 0.5);
+sunLight.position.set(0, 0, 0);
+sunLight.castShadow = true; // Enable shadow casting
+scene.add(sunLight);
 
 createAsteroidBelt(); // Generate the asteroid belt
 
@@ -513,6 +518,7 @@ function showPopup(data) {
   closeButton.style.border = "none";
   closeButton.style.borderRadius = "5px";
   closeButton.style.fontSize = "14px";
+  closeButton.style.fontFamily = "Poppins";
 
   // Attach the event listener directly to the button
   closeButton.addEventListener("click", () => {
